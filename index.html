@@ -135,4 +135,98 @@
 
         /* 個別風格設定 */
         /* 左側：文明交易進化論 */
-        .style
+        .style-history {
+            border-top: 5px solid var(--history-primary);
+        }
+        .style-history .icon-box { color: var(--history-primary); }
+        .style-history .card-title { color: var(--history-primary); }
+        .style-history .btn {
+            background-color: var(--history-bg);
+            color: var(--history-primary);
+            border: 2px solid var(--history-primary);
+        }
+        .style-history:hover .btn {
+            background-color: var(--history-primary);
+            color: var(--white);
+        }
+
+        /* 右側：互動式貨幣演進 */
+        .style-civics {
+            border-top: 5px solid var(--civics-accent);
+        }
+        .style-civics .icon-box { color: var(--civics-accent); }
+        .style-civics .card-title { color: var(--civics-primary); }
+        .style-civics .btn {
+            background-color: #EBF5FB;
+            color: var(--civics-accent);
+            border: 2px solid var(--civics-accent);
+        }
+        .style-civics:hover .btn {
+            background-color: var(--civics-accent);
+            color: var(--white);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #888;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* RWD */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+            .card {
+                width: 100%;
+                max-width: 320px;
+                height: auto;
+                min-height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>貨幣與文明教學網</h1>
+        <p class="subtitle">探索從以物易物到現代金融體系的奇妙旅程<br>國中公民科數位輔助教材</p>
+    </header>
+
+    <main>
+        <a href="bankinggame.html" class="card-link">
+            <article class="card style-history">
+                <div class="icon-box">🏺</div>
+                <h2 class="card-title">文明交易進化論</h2>
+                <p class="card-desc">
+                    回到過去，探索貨幣起源。<br>
+                    從自給自足、以物易物到金屬貨幣，<br>
+                    透過動畫了解交易媒介的演變歷史。
+                </p>
+                <div class="btn">開始探索歷史</div>
+            </article>
+        </a>
+
+        <a href="exchanging.html" class="card-link">
+            <article class="card style-civics">
+                <div class="icon-box">📊</div>
+                <h2 class="card-title">互動式貨幣公民教材</h2>
+                <p class="card-desc">
+                    進入現代，掌握金融工具。<br>
+                    體驗匯率計算、法定貨幣運作，<br>
+                    透過互動工具認識現代公民經濟生活。
+                </p>
+                <div class="btn">進入互動教室</div>
+            </article>
+        </a>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 公民科教育實習教學檔案 | Designed for 9th Grade Civics</p>
+    </footer>
+
+</body>
+</html>
