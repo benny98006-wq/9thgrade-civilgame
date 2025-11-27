@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國三公民：匯率與貿易互動實驗室</title>
+    <style>
+        /* 基礎設定 */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --success: #2a9d8f;
+            --danger: #e63946;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "微軟正黑體", sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .header-box {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+        }
+
+        /* Part 1 & 2 樣式 */
+        .mode-switch { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; }
+        .mode-btn { padding: 10px 20px; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .mode-btn.active { background: var(--primary); color: white; }
+        .calculator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .result-box { background-color: #eef2ff; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; }
+        .math-step { color: #d63384; font-size: 1.1em; margin-top: 10px; font-family: "Consolas", monospace; font-weight: bold; background: #fff; padding: 10px; border-radius: 5px; border: 1px dashed #ccc; }
+        .highlight { color: var(--secondary); font-weight: bold; font-size: 1.8em; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 50px; cursor: pointer; font-size: 18px; margin: 5px; transition: 0.2s; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-secondary { background-color: #6c757d; }
+        
+        /* Part 2 貿易模擬器專用樣式 */
+        .trade-area { border-left-color: var(--success); background-color: #f1fcf9; }
+        .role-selection { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+        .role-card { border: 2px solid #ccc; border-radius: 10px; padding: 15px; width: 45%; text-align: center; cursor: pointer; transition: 0.3s; background: white; }
+        .role-card:hover { transform: scale(1.03); border-color: var(--primary); }
+        .role-card.selected { border-color: var(--primary); background-color: #e3f2fd; box-shadow: 0 0 10px rgba(67, 97, 238, 0.3); }
+        .emoji-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+        .control-panel { display: flex; justify-content: space-around; align-items: center; background: #fff; padding: 15px; border-radius: 10px; margin-top: 15px; border: 1px solid #ddd; }
+        .rate-display { font-size: 1.5rem; font-weight: bold; color: var(--secondary); }
+        .profit-display { margin-top: 20px; text-align: center; padding: 15px; border-radius: 10px; font-size: 1.2rem; }
+        .profit-up { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .profit-down { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 手機版調整 */
+        @media (max-width: 600px) {
+            .calculator-grid { grid-template-columns: 1fr; }
+            .role-selection { flex-direction: column; align-items: center; }
+            .role-card { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-box">
+        <h1>🌍 國三公民：匯率全攻略</h1>
+        <p>從計算到貿易：掌握「升值與貶值」的關鍵影響</p>
+    </div>
+
+    <div class="card">
+        <h2>🧮 Part 1. 匯率計算機</h2>
+        <div class="mode-switch">
+            <button class="mode-btn active" onclick="setMode('twdToForeign')" id="btnTwdToForeign">🇹🇼 台幣 ➝ ✈️ 外幣</button>
+            <button class="mode-btn" onclick="setMode('foreignToTwd')" id="btnForeignToTwd">✈️ 外幣 ➝ 🇹🇼 台幣</button>
+        </div>
+        <p id="instructionText">我有台幣，想換成外幣（出國玩）：</p>
+        <div class="calculator-grid">
+            <div>
+                <label id="labelInput">💰 輸入台幣金額</label>
+                <input type="number" id="amountInput" placeholder="例如: 1000" oninput="calculate()">
+            </div>
+            <div>
+                <label id="labelSelect">✈️ 選擇外幣</label>
+                <select id="currencySelect" onchange="calculate()">
+                    </select>
+            </div>
+        </div>
+        <div class="result-box">
+            <div>換算結果：</div>
+            <div class="highlight" id="resultText">0</div>
+            <div class="math-step" id="mathStep">請輸入金額</div>
+        </div>
+    </div>
+
+    <div class="card trade-area">
+        <h2>🏭 Part 2. 老闆模擬器：升值還是貶值好？</h2>
+        <p>請先選擇你要當哪一種老闆：</p>
+        
+        <div class="role-selection">
+            <div class="role-card" id="roleExport" onclick="selectRole('export')">
+                <span class="emoji-icon">🧋</span>
+                <h3>出口商 (賣珍奶)</h3>
+                <p>把台灣珍奶賣到美國<br>賺的是美金 (USD)</p>
+            </div>
+            <div class="role-card" id="roleImport" onclick="selectRole('import')">
+                <span class="emoji-icon">👟</span>
+                <h3>進口商 (買球鞋)</h3>
+                <p>從美國買球鞋回台灣<br>付的是美金 (USD)</p>
+            </div>
+        </div>
+
+        <div id="simulationArea" style="display:none;">
+            <div class="control-panel">
+                <button class="btn" onclick="changeRate(-1)">📈 台幣升值<br><small>(美金變便宜)</small></button>
+                <div style="text-align: center;">
+                    <div>目前匯率</div>
+                    <div class="rate-display">1 USD = <span id="simRate">30</span> TWD</div>
+                </div>
+                <button class="btn btn-secondary" onclick="changeRate(1)">📉 台幣貶值<br><small>(美金變貴)</small></button>
+            </div>
+
+            <div id="scenarioDescription" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+
+            <div id="profitBox" class="profit-display">
+                </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🎮 Part 3. 綜合練習：購物直覺挑戰</h2>
+        <div style="text-align: center;">
+            <button class="btn" onclick="newQuestion()">🎲 隨機出題</button>
+        </div>
+        <div id="questionBox" style="margin-top: 20px; display: none;">
+            <h3 id="scenarioText" style="text-align:center; color:var(--primary);">題目載入中...</h3>
+            
+            <div style="font-size: 1.2em; text-align: center; margin: 15px 0;">
+                <p>商品標價：<strong style="color: #d63384; font-size: 1.5em;" id="itemPrice"></strong> <span id="itemCurrency"></span></p>
+                <p>參考匯率：1 <span id="itemCurrencyName"></span> = <strong id="currentRate"></strong> 台幣</p>
+            </div>
+            
+            <p style="text-align: center;">❓ 請問這大約等於多少台幣？</p>
+            
+            <div id="optionsArea" style="text-align: center;"></div>
+            
+            <div id="gameFeedback" class="feedback" style="text-align: center; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- 全域變數與資料 ---
+    const currencies = {
+        USD: { name: "美金", symbol: "USD", rateToTWD: 32.5, rateFromTWD: 0.0307 },
+        JPY: { name: "日圓", symbol: "JPY", rateToTWD: 0.215, rateFromTWD: 4.651 },
+        EUR: { name: "歐元", symbol: "EUR", rateToTWD: 34.5, rateFromTWD: 0.0289 },
+        KRW: { name: "韓元", symbol: "KRW", rateToTWD: 0.0235, rateFromTWD: 42.55 }
+    };
+
+    // --- Part 1: 計算機邏輯 ---
+    let currentMode = 'twdToForeign';
+
+    function initCalculator() {
+        const select = document.getElementById('currencySelect');
+        select.innerHTML = '';
+        for (let key in currencies) {
+            let option = document.createElement('option');
+            option.value = key;
+            option.text = `${currencies[key].name} (${currencies[key].symbol})`;
+            select.add(option);
+        }
+        calculate();
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btnTwdToForeign').className = mode === 'twdToForeign' ? 'mode-btn active' : 'mode-btn';
+        document.getElementById('btnForeignToTwd').className = mode === 'foreignToTwd' ? 'mode-btn active' : 'mode-btn';
+        
+        if (mode === 'twdToForeign') {
+            document.getElementById('instructionText').innerText = "我有台幣，想換成外幣：";
+            document.getElementById('labelInput').innerText = "💰 輸入台幣金額";
+            document.getElementById('amountInput').placeholder = "例如: 1000";
+        } else {
+            document.getElementById('instructionText').innerText = "我有外幣，想換回台幣：";
+            document.getElementById('labelInput').innerText = "✈️ 輸入外幣金額";
+            document.getElementById('amountInput').placeholder = "例如: 10";
+        }
+        calculate();
+    }
+
+    function calculate() {
+        const amount = parseFloat(document.getElementById('amountInput').value);
+        const currencyKey = document.getElementById('currencySelect').value;
+        const data = currencies[currencyKey];
+        const resultDiv = document.getElementById('resultText');
+        const stepDiv = document.getElementById('mathStep');
+
+        if (isNaN(amount)) {
+            resultDiv.innerText = "0";
+            stepDiv.innerText = "請輸入數字";
+            return;
+        }
+
+        if (currentMode === 'twdToForeign') {
+            // 台幣換外幣
+            const result = amount * data.rateFromTWD;
+            resultDiv.innerText = `${result.toFixed(2)} ${data.symbol}`;
+            stepDiv.innerHTML = `${amount} (台幣) ✖️ ${data.rateFromTWD} (匯率) = ${result.toFixed(2)} ${data.symbol}`;
+        } else {
+            // 外幣換台幣
+            const result = amount * data.rateToTWD;
+            resultDiv.innerText = `${Math.round(result)} TWD`;
+            stepDiv.innerHTML = `${amount} (${data.symbol}) ✖️ ${data.rateToTWD} (匯率) = ${Math.round(result)} 台幣`;
+        }
+    }
+
+    // --- Part 2: 貿易模擬器邏輯 ---
+    let currentRole = ''; 
+    let simRate = 30; 
+    const baseRate = 30;
+    const goodsPriceUSD = 100; 
+
+    function selectRole(role) {
+        currentRole = role;
+        document.getElementById('roleExport').className = role === 'export' ? 'role-card selected' : 'role-card';
+        document.getElementById('roleImport').className = role === 'import' ? 'role-card selected' : 'role-card';
+        document.getElementById('simulationArea').style.display = 'block';
+        
+        simRate = 30;
+        updateSimulation();
+    }
+
+    function changeRate(change) {
+        simRate += change;
+        if(simRate < 25) simRate = 25;
+        if(simRate > 35) simRate = 35;
+        updateSimulation();
+    }
+
+    function updateSimulation() {
+        document.getElementById('simRate').innerText = simRate;
+        const profitBox = document.getElementById('profitBox');
+        const desc = document.getElementById('scenarioDescription');
+        
+        const amountTWD = goodsPriceUSD * simRate;
+        const baseAmountTWD = goodsPriceUSD * baseRate;
+        const diff = amountTWD - baseAmountTWD;
+
+        if (currentRole === 'export') {
+            desc.innerText = `情境：你賣出 100 美金的珍奶，要去銀行換回台幣...`;
+            if (simRate > baseRate) {
+                profitBox.className = "profit-display profit-up";
+                profitBox.innerHTML = `<h3>😄 賺到了！</h3><p>多賺了 ${diff} 元！ (台幣貶值有利出口)</p>`;
+            } else if (simRate < baseRate) {
+                profitBox.className = "profit-display profit-down";
+                profitBox.innerHTML = `<h3>😭 縮水了！</h3><p>少賺了 ${Math.abs(diff)} 元！ (台幣升值不利出口)</p>`;
+            } else {
+                profitBox.className = "profit-display";
+                profitBox.innerHTML = `<h3>😐 匯率持平</h3><p>收入正常。</p>`;
+            }
+        } else {
+            desc.innerText = `情境：你要買 100 美金的球鞋，要拿台幣去銀行換...`;
+            if (simRate > baseRate) {
+                profitBox.className = "profit-display profit-down";
+                profitBox.innerHTML = `<h3>😭 變貴了！</h3><p>多花了 ${diff} 元！ (台幣貶值不利進口)</p>`;
+            } else if (simRate < baseRate) {
+                profitBox.className = "profit-display profit-up";
+                profitBox.innerHTML = `<h3>😄 變便宜了！</h3><p>省下了 ${Math.abs(diff)} 元！ (台幣升值有利進口)</p>`;
+            } else {
+                profitBox.className = "profit-display";
+                profitBox.innerHTML = `<h3>😐 匯率持平</h3><p>價格正常。</p>`;
+            }
+        }
+    }
+
+    // --- Part 3: 購物挑戰 (修正後) ---
+    function newQuestion() {
+        const keys = Object.keys(currencies);
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        const data = currencies[randomKey];
+        
+        // 隨機生成價格
+        const price = Math.floor(Math.random() * 50) * 10 + 10; 
+        const realCostTWD = Math.round(price * data.rateToTWD);
+        
+        // 1. 顯示隱藏的區塊
+        document.getElementById('questionBox').style.display = 'block';
+        
+        // 2. 清空並更新 UI
+        document.getElementById('gameFeedback').innerText = '';
+        
+        // 更新情境文字 (先前版本漏了這行)
+        document.getElementById('scenarioText').innerText = `你在 ${data.name} 的商店看上了一個商品`;
+        
+        document.getElementById('itemPrice').innerText = price;
+        document.getElementById('itemCurrency').innerText = data.symbol;
+        document.getElementById('itemCurrencyName').innerText = data.name;
+        document.getElementById('currentRate').innerText = data.rateToTWD;
+
+        generateOptions(realCostTWD, price, data.rateToTWD);
+    }
+
+    function generateOptions(correctAnswer, price, rate) {
+        const optionsDiv = document.getElementById('optionsArea');
+        optionsDiv.innerHTML = ''; // 清空舊選項
+        
+        // 生成三個選項
+        let answers = [
+            correctAnswer, 
+            Math.round(correctAnswer * 1.5), 
+            Math.round(correctAnswer * 0.6)
+        ];
+        // 洗牌
+        answers.sort(() => Math.random() - 0.5);
+
+        answers.forEach(ans => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-secondary';
+            btn.innerText = `約 ${ans} 元`;
+            // 點擊事件
+            btn.onclick = () => {
+                const feedback = document.getElementById('gameFeedback');
+                if (ans === correctAnswer) {
+                    feedback.innerText = "🎉 答對了！";
+                    feedback.style.color = "green";
+                } else {
+                    feedback.innerText = `😅 錯囉！正確是：${price} × ${rate} = ${correctAnswer}`;
+                    feedback.style.color = "red";
+                }
+            };
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    // 初始化計算機
+    initCalculator();
+</script>
+
+</body>
+</html>
